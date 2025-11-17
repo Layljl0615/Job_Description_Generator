@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from openai import OpenAI
 from .models import Past
 from django.core.paginator import Paginator
-import os  # ✅ added
+import os 
 
 # Create OpenAI client once, using the env var loaded by manage.py
 API_KEY = os.getenv("OPENAI_API_KEY")
@@ -15,56 +15,111 @@ if not API_KEY:
     raise RuntimeError("OPENAI_API_KEY is not set. Ensure .env is next to manage.py and is loaded.")
 client = OpenAI(api_key=API_KEY)
 
+def build_jd_prompt(job_title, tech_skills, experience_level, location, company_tone):
+    """
+    Combine the 5 fields from the front end into a clear prompt.
+    """
+    return f"""
+You are an experienced technical recruiter and HR specialist.
+
+Based on the following information, write a complete job description in English.
+
+- Job Title: {job_title}
+- Tech Skills: {tech_skills}
+- Experience Level: {experience_level}
+- Location: {location}
+- Company Tone: {company_tone}
+
+Requirements:
+
+* Start with the job title as a heading.
+* Then add a section "Responsibilities:" as bullet points.
+* Then a section "Requirements:" as bullet points.
+* Optionally add a "Nice to Have:" section if it makes sense.
+* End with a short paragraph about location / remote policy and company culture.
+* Use a tone that matches the given Company Tone (Formal / Friendly / Playful).
+* Length around 300 to 500 words.
+"""
+
 # Create Homepage
 @login_required(login_url='login')
 def home(request):
-    # Check for form submission
+    context = {
+        "job_title": "",
+        "tech_skills": "",
+        "experience_level": "",
+        "location": "",
+        "company_tone": "Formal",
+        "job_description": "",
+    }
+
     if request.method == "POST":
-        question = request.POST['question']
-        past_responses = request.POST['past_responses']
+        job_title = request.POST.get("job_title", "").strip()
+        tech_skills = request.POST.get("tech_skills", "").strip()
+        experience_level = request.POST.get("experience_level", "").strip()
+        location = request.POST.get("location", "").strip()
+        company_tone = request.POST.get("company_tone", "Formal").strip()
+
+        context.update(
+            {
+                "job_title": job_title,
+                "tech_skills": tech_skills,
+                "experience_level": experience_level,
+                "location": location,
+                "company_tone": company_tone,
+            }
+        )
+
+        # prompt
+        user_prompt = build_jd_prompt(
+            job_title, tech_skills, experience_level, location, company_tone
+        )
 
         try:
-            # Make a Completion using new API
+            # call OpenAI
             response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
+                model="gpt-3.5-turbo",   
                 messages=[
-                    {"role": "user", "content": question}
+                    {
+                        "role": "system",
+                        "content": "You write polished, professional job descriptions.",
+                    },
+                    {"role": "user", "content": user_prompt},
                 ],
-                temperature=0,
-                max_tokens=60,
+                temperature=0.7,
+                max_tokens=700,
                 top_p=1.0,
                 frequency_penalty=0.0,
-                presence_penalty=0.0
+                presence_penalty=0.0,
             )
 
-            # Parse the response
-            answer = response.choices[0].message.content.strip()
+            job_description = response.choices[0].message.content.strip()
 
-            # Check if we got a valid answer
-            if not answer:
-                answer = "No response received from ChatGPT."
+            if not job_description:
+                job_description = "No response received from the model."
 
-            # Logic for Past responses
-            if "41elder41" in past_responses:
-                past_responses = answer
-            else:
-                past_responses = f"{past_responses}<br/><br/>{answer}"
+            # save to Past
+            question_for_history = (
+                f"Job Title: {job_title}\n"
+                f"Tech Skills: {tech_skills}\n"
+                f"Experience Level: {experience_level}\n"
+                f"Location: {location}\n"
+                f"Company Tone: {company_tone}"
+            )
 
-            # Save To Database
-            record = Past(question=question, answer=answer, user=request.user)
-            record.save()
+            Past.objects.create(
+                question=question_for_history,
+                answer=job_description,
+                user=request.user,
+            )
 
-            return render(request, 'home.html', {"question": question, "response": answer, "past_responses": past_responses})
+            context["job_description"] = job_description
 
         except Exception as e:
-            # If there's an error, don't show the 41elder41 marker
-            if "41elder41" in past_responses:
-                past_responses = ""
-            error_message = f"Error: {str(e)}"
-            print(f"API Error: {error_message}")  # Log to console
-            return render(request, 'home.html', {"question": question, "response": error_message, "past_responses": error_message})
+            context["job_description"] = f"Error generating job description: {e}"
 
-    return render(request, 'home.html', {})
+    return render(request, 'home.html', context)
+
 
 
 @login_required(login_url='login')
