@@ -6,6 +6,11 @@ from django.contrib.auth.models import User
 from openai import OpenAI
 from .models import Past 
 from django.core.paginator import Paginator
+import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Create Homepage
 @login_required(login_url='login')
@@ -18,7 +23,7 @@ def home(request):
 
 		# Do API Stuff
 		# Set API Key and Create OpenAI Client
-		client = OpenAI(api_key="")
+		client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 		
 		try:
 			# Make a Completion using new API
