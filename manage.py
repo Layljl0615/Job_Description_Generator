@@ -2,7 +2,19 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
+from pathlib import Path
 
+try:
+    from dotenv import load_dotenv
+    BASE_DIR = Path(__file__).resolve().parent
+    dotenv_path = BASE_DIR / ".env"
+    load_dotenv(dotenv_path)
+
+    key = os.getenv("OPENAI_API_KEY") or ""
+    print(f"[dotenv] OPENAI_API_KEY loaded? {bool(key)} len={len(key)} from {dotenv_path}")
+    print(f"[python] Using interpreter: {sys.executable}")
+except Exception as e:
+    print("[dotenv] Skipped loading .env due to:", repr(e))
 
 def main():
     """Run administrative tasks."""

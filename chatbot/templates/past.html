@@ -1,62 +1,76 @@
-{% extends 'base.html' %}
+{% extends 'base.html' %} {% block content %} {% load tz %}
+<div class="container mt-4">
+  <h3>Job Description History</h3>
+  <hr />
 
+  {% if pages %} {% for thing in pages %}
+  <div class="card mb-4">
+    <div class="card-body">
+      <p class="text-muted small mb-2">
+        {{ thing.created_at|localtime|date:"Y-m-d H:i" }}
+      </p>
 
-{% block content %}
+      <!--input（Job Title / Skills...） -->
+      <h6 class="text-secondary">Input</h6>
+      <pre
+        style="white-space: pre-wrap; font-weight: 600; margin-bottom: 0.75rem"
+      >
+{{ thing.question }}
+          </pre
+      >
 
-{% if past %}
-<br/>
-	{% for thing in pages %}
-		<strong>{{ thing.question }}</strong><br/>
-		{{ thing.answer }} <br/>
-		<a href="{% url 'delete_past' thing.id %}" class="btn btn-outline-secondary btn-sm"> Delete</a>
+      <hr />
 
+      <!--JD -->
+      <h6 class="text-secondary">Generated Job Description</h6>
+      <pre style="white-space: pre-wrap; margin-bottom: 0.75rem">
+{{ thing.answer }}
+          </pre
+      >
 
-		<br/><br/>
+      <a
+        href="{% url 'delete_past' thing.id %}"
+        class="btn btn-outline-danger btn-sm"
+      >
+        Delete
+      </a>
+    </div>
+  </div>
+  {% endfor %} {% else %}
+  <p class="text-muted mt-3">
+    No job descriptions yet. Go back to the generator page and create one!
+  </p>
+  {% endif %}
 
-	{% endfor %}
+  <nav aria-label="Page navigation example">
+    <ul class="pagination justify-content-center mt-4">
+      <li class="page-item">
+        <a class="page-link" href="?page=1">&laquo; First</a>
+      </li>
 
-{% endif %}
-
-
-<hr><br/><br/>
-
-
-<nav aria-label="Page navigation example">
-  <ul class="pagination justify-content-center">
-
-  	<li class="page-item"><a class="page-link" href="?page=1">&laquo; First</a></li>
-
-  	{% if pages.has_previous %}
-
-	  	
-
-	    <li class="page-item"><a class="page-link" href="?page={{pages.previous_page_number}}">Previous</a></li>
-
-    {% endif %}
-
-
-    {% for i in nums %}
-    	<li class="page-item"><a class="page-link" href="?page={{ forloop.counter }}">{{ forloop.counter}}</a></li>
-    {% endfor %}
-
-
-
-    {% if pages.has_next %}
-    	<li class="page-item"><a class="page-link" href="?page={{ pages.next_page_number }}">Next</a></li>
-    	<li class="page-item"><a class="page-link" href="?page={{ pages.paginator.num_pages }}">Last &raquo; </a></li>
-
-    {% endif %}
-
-
-
-    
-    
-
-
-  </ul>
-</nav>
-
-
-<br/><br/>
-
+      {% if pages.has_previous %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ pages.previous_page_number }}"
+          >Previous</a
+        >
+      </li>
+      {% endif %} {% for i in nums %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ forloop.counter }}"
+          >{{ forloop.counter }}</a
+        >
+      </li>
+      {% endfor %} {% if pages.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ pages.next_page_number }}">Next</a>
+      </li>
+      <li class="page-item">
+        <a class="page-link" href="?page={{ pages.paginator.num_pages }}"
+          >Last &raquo;</a
+        >
+      </li>
+      {% endif %}
+    </ul>
+  </nav>
+</div>
 {% endblock %}
