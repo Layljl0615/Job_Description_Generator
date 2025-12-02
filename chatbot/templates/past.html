@@ -1,4 +1,4 @@
-{% extends 'base.html' %} {% block content %} {% load tz %}
+{% extends 'base.html' %} {% block content %} {% load tz %} {% load jd_format %}
 <div class="container mt-4">
   <h3>Job Description History</h3>
   <hr />
@@ -23,10 +23,9 @@
 
       <!--JD -->
       <h6 class="text-secondary">Generated Job Description</h6>
-      <pre style="white-space: pre-wrap; margin-bottom: 0.75rem">
-{{ thing.answer }}
-          </pre
-      >
+      <div class="jd-answer" style="white-space: pre-wrap; margin-bottom: 0.75rem">
+        {{ thing.answer|jd_to_html }}
+      </div>
 
       <a
         href="{% url 'delete_past' thing.id %}"
