@@ -81,7 +81,7 @@
             Fill in the form on the left and click
             <strong>"Generate Job Description"</strong> to see the result here.
           </span>
-          {% else %} {{ job_description|jd_to_html }} {% endif %}
+          {% else %} {{ job_description_html|safe }} {% endif %}
         </div>
       </div>
 

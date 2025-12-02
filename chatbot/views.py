@@ -8,6 +8,7 @@ from .models import Past, UserProfile
 from .forms import ProfileUpdateForm, PasswordChangeWithSecurityForm
 from django.core.paginator import Paginator
 import os 
+from .utils import render_job_description
 
 # Create OpenAI client once, using the env var loaded by manage.py
 API_KEY = os.getenv("OPENAI_API_KEY")
@@ -58,12 +59,18 @@ def home(request):
         "location": "",
         "company_tone": "",
         "job_description": "",
+        "job_description_html": "",
     }
     saved_context = request.session.get("last_generation")
     context = default_context.copy()
 
     if saved_context:
         context.update(saved_context)
+        # Recompute HTML if only raw text was saved
+        if context.get("job_description") and not context.get("job_description_html"):
+            context["job_description_html"] = render_job_description(
+                context["job_description"]
+            )
 
     if request.method == "POST":
         job_title = request.POST.get("job_title", "").strip()
@@ -135,9 +142,11 @@ def home(request):
             )
 
             context["job_description"] = job_description
+            context["job_description_html"] = render_job_description(job_description)
 
         except Exception as e:
             context["job_description"] = f"Error generating job description: {e}"
+            context["job_description_html"] = context["job_description"]
 
         request.session["last_generation"] = {
             "job_title": job_title,
@@ -146,6 +155,7 @@ def home(request):
             "location": location,
             "company_tone": company_tone,
             "job_description": context.get("job_description", ""),
+            "job_description_html": context.get("job_description_html", ""),
         }
 
     return render(request, 'home.html', context)
