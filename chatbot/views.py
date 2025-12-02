@@ -15,11 +15,12 @@ if not API_KEY:
     raise RuntimeError("OPENAI_API_KEY is not set. Ensure .env is next to manage.py and is loaded.")
 client = OpenAI(api_key=API_KEY)
 
-def build_jd_prompt(job_title, tech_skills, experience_level, location, company_tone):
+
+def build_jd_prompt(job_title, tech_skills, experience_level, location, optional_notes):
     """
-    Combine the 5 fields from the front end into a clear prompt.
+    Combine 4 required fields plus 1 optional free-text field into a clear prompt.
     """
-    return f"""
+    base_prompt = f"""
 You are an experienced technical recruiter and HR specialist.
 
 Based on the following information, write a complete job description in English.
@@ -28,8 +29,12 @@ Based on the following information, write a complete job description in English.
 - Tech Skills: {tech_skills}
 - Experience Level: {experience_level}
 - Location: {location}
-- Company Tone: {company_tone}
+"""
 
+    if optional_notes:
+        base_prompt += f"- Extra notes from the user (optional): {optional_notes}\n"
+
+    base_prompt += """
 Requirements:
 
 * Start with the job title as a heading.
@@ -37,9 +42,10 @@ Requirements:
 * Then a section "Requirements:" as bullet points.
 * Optionally add a "Nice to Have:" section if it makes sense.
 * End with a short paragraph about location / remote policy and company culture.
-* Use a tone that matches the given Company Tone (Formal / Friendly / Playful).
 * Length around 300 to 500 words.
 """
+    return base_prompt
+
 
 # Create Homepage
 @login_required(login_url='login')
@@ -49,7 +55,7 @@ def home(request):
         "tech_skills": "",
         "experience_level": "",
         "location": "",
-        "company_tone": "Formal",
+        "company_tone": "",
         "job_description": "",
     }
 
@@ -58,7 +64,9 @@ def home(request):
         tech_skills = request.POST.get("tech_skills", "").strip()
         experience_level = request.POST.get("experience_level", "").strip()
         location = request.POST.get("location", "").strip()
-        company_tone = request.POST.get("company_tone", "Formal").strip()
+        optional_notes = request.POST.get("company_tone", "").strip()
+
+        company_tone = optional_notes
 
         context.update(
             {
@@ -66,19 +74,22 @@ def home(request):
                 "tech_skills": tech_skills,
                 "experience_level": experience_level,
                 "location": location,
-                "company_tone": company_tone,
+                "company_tone": optional_notes,
             }
         )
 
-        # prompt
         user_prompt = build_jd_prompt(
-            job_title, tech_skills, experience_level, location, company_tone
+            job_title,
+            tech_skills,
+            experience_level,
+            location,
+            optional_notes,
         )
 
         try:
             # call OpenAI
             response = client.chat.completions.create(
-                model="gpt-3.5-turbo",   
+                model="gpt-3.5-turbo",
                 messages=[
                     {
                         "role": "system",
@@ -98,14 +109,17 @@ def home(request):
             if not job_description:
                 job_description = "No response received from the model."
 
-            # save to Past
-            question_for_history = (
-                f"Job Title: {job_title}\n"
-                f"Tech Skills: {tech_skills}\n"
-                f"Experience Level: {experience_level}\n"
-                f"Location: {location}\n"
-                f"Company Tone: {company_tone}"
-            )
+            lines = [
+                f"Job Title: {job_title}",
+                f"Tech Skills: {tech_skills}",
+                f"Experience Level: {experience_level}",
+                f"Location: {location}",
+            ]
+
+            if optional_notes:
+                lines.append(f"Optional: {optional_notes}")
+
+            question_for_history = "\n".join(lines)
 
             Past.objects.create(
                 question=question_for_history,
@@ -119,7 +133,6 @@ def home(request):
             context["job_description"] = f"Error generating job description: {e}"
 
     return render(request, 'home.html', context)
-
 
 
 @login_required(login_url='login')

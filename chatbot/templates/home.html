@@ -1,6 +1,4 @@
-{% extends 'base.html' %}
-
-{% block content %}
+{% extends 'base.html' %} {% block content %}
 <div class="container mt-4">
   <div class="row">
     <!-- left table -->
@@ -18,7 +16,7 @@
             placeholder="e.g. Data Engineer"
             value="{{ job_title|default:'' }}"
             required
-          >
+          />
         </div>
 
         <div class="mb-3">
@@ -30,7 +28,7 @@
             placeholder="e.g. Python, AWS, Spark, ETL"
             value="{{ tech_skills|default:'' }}"
             required
-          >
+          />
           <small class="text-muted">Comma separated skills.</small>
         </div>
 
@@ -42,7 +40,7 @@
             name="experience_level"
             placeholder="e.g. 3-5 years"
             value="{{ experience_level|default:'' }}"
-          >
+          />
         </div>
 
         <div class="mb-3">
@@ -53,16 +51,18 @@
             name="location"
             placeholder="e.g. San Francisco / Remote"
             value="{{ location|default:'' }}"
-          >
+          />
         </div>
 
         <div class="mb-3">
-          <label class="form-label">Company Tone</label>
-          <select class="form-select" name="company_tone">
-            <option value="Formal" {% if company_tone == "Formal" %}selected{% endif %}>Formal</option>
-            <option value="Friendly" {% if company_tone == "Friendly" %}selected{% endif %}>Friendly</option>
-            <option value="Playful" {% if company_tone == "Playful" %}selected{% endif %}>Playful</option>
-          </select>
+          <label class="form-label">Optional</label>
+          <input
+            type="text"
+            class="form-control"
+            name="company_tone"
+            placeholder="Any extra notes or preferences (optional)"
+            value="{{ company_tone|default:'' }}"
+          />
         </div>
 
         <button type="submit" class="btn btn-primary w-100">
@@ -74,28 +74,30 @@
     <!-- right jd -->
     <div class="col-md-7">
       <h4 class="mb-3">Preview</h4>
-      <div class="card" style="min-height: 300px;">
+      <div class="card" style="min-height: 300px">
         <div class="card-body" id="jd-content">
           {% if job_description %}
-            <pre style="white-space: pre-wrap;">{{ job_description }}</pre>
+          <pre style="white-space: pre-wrap">{{ job_description }}</pre>
           {% else %}
-            <span class="text-muted">
-              Fill in the form on the left and click
-              <strong>"Generate Job Description"</strong> to see the result here.
-            </span>
+          <span class="text-muted">
+            Fill in the form on the left and click
+            <strong>"Generate Job Description"</strong> to see the result here.
+          </span>
           {% endif %}
         </div>
       </div>
 
       {% if job_description %}
-        <div class="mt-3 d-flex gap-2">
-          <button class="btn btn-outline-secondary me-2" type="button" onclick="copyJD()">
-            Copy JD
-          </button>
-          <a href="{% url 'past' %}" class="btn btn-success">
-            View History
-          </a>
-        </div>
+      <div class="mt-3 d-flex gap-2">
+        <button
+          class="btn btn-outline-secondary me-2"
+          type="button"
+          onclick="copyJD()"
+        >
+          Copy JD
+        </button>
+        <a href="{% url 'past' %}" class="btn btn-success"> View History </a>
+      </div>
       {% endif %}
     </div>
   </div>
@@ -103,9 +105,9 @@
 
 <script>
   function copyJD() {
-    const text = document.getElementById('jd-content').innerText;
-    navigator.clipboard.writeText(text).then(function() {
-      alert('Job description copied to clipboard!');
+    const text = document.getElementById("jd-content").innerText;
+    navigator.clipboard.writeText(text).then(function () {
+      alert("Job description copied to clipboard!");
     });
   }
 </script>
