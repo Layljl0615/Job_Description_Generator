@@ -191,7 +191,8 @@ def login_user(request):
             return redirect('home')
         else:
             messages.error(request, "Invalid username or password!")
-            return redirect('login')
+            # Save identity to avoid re-entry --- IGNORE ---
+            return render(request, 'login.html', {'username': username})
 
     return render(request, 'login.html', {})
 
