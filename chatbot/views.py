@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from openai import OpenAI
 from .models import Past, UserProfile
-from .forms import ProfileUpdateForm, PasswordChangeWithSecurityForm
+from .forms import CustomUserCreationForm, ProfileUpdateForm, PasswordChangeWithSecurityForm
 from django.core.paginator import Paginator
 import os 
 
@@ -150,46 +150,27 @@ def delete_past(request, Past_id):
 # User Registration View
 def register_user(request):
     if request.method == "POST":
-        username = request.POST['username']
-        email = request.POST['email']
-        password1 = request.POST['password1']
-        password2 = request.POST['password2']
-        security_question = request.POST.get('security_question')
-        security_answer = request.POST.get('security_answer')
-
-        # Check if passwords match
-        if password1 == password2:
-            # Check if username already exists
-            if User.objects.filter(username=username).exists():
-                messages.error(request, "Username already exists!")
-                return redirect('register')
-            # Check if email already exists
-            elif User.objects.filter(email=email).exists():
-                messages.error(request, "Email already registered!")
-                return redirect('register')
-            # Check if security question and answer are provided
-            elif not security_question or not security_answer:
-                messages.error(request, "Please provide security question and answer!")
-                return redirect('register')
-            else:
-                # Create user
-                user = User.objects.create_user(username=username, email=email, password=password1)
-                user.save()
-                # Create user profile with security question
-                UserProfile.objects.create(
-                    user=user,
-                    security_question=security_question,
-                    security_answer=security_answer
-                )
-                messages.success(request, "Registration successful! Please login.")
-                return redirect('login')
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            # Create user
+            user = form.save()
+            messages.success(request, "Registration successful! Please login.")
+            return redirect('login')
         else:
-            messages.error(request, "Passwords do not match!")
-            return redirect('register')
-
-    # Get security questions for the form
-    security_questions = UserProfile.SECURITY_QUESTIONS
-    return render(request, 'register.html', {'security_questions': security_questions})
+            # Form is not valid, render the template with the form containing errors
+            security_questions = UserProfile.SECURITY_QUESTIONS
+            return render(request, 'register.html', {
+                'form': form,
+                'security_questions': security_questions
+            })
+    else:
+        # GET request - display empty form
+        form = CustomUserCreationForm()
+        security_questions = UserProfile.SECURITY_QUESTIONS
+        return render(request, 'register.html', {
+            'form': form,
+            'security_questions': security_questions
+        })
 
 
 # User Login View
@@ -231,6 +212,9 @@ def edit_profile(request):
                 profile_form.save()
                 messages.success(request, 'Profile updated successfully!')
                 return redirect('edit_profile')
+            else:
+                # Form is not valid, render the template with the form containing errors
+                password_form = PasswordChangeWithSecurityForm(user=request.user)
                 
         elif form_type == 'password':
             password_form = PasswordChangeWithSecurityForm(request.user, request.POST)
@@ -243,6 +227,9 @@ def edit_profile(request):
                 update_session_auth_hash(request, request.user)
                 messages.success(request, 'Password changed successfully!')
                 return redirect('edit_profile')
+            else:
+                # Form is not valid, render the template with the form containing errors
+                profile_form = ProfileUpdateForm(instance=request.user)
     else:
         profile_form = ProfileUpdateForm(instance=request.user)
         password_form = PasswordChangeWithSecurityForm(user=request.user)
