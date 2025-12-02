@@ -37,7 +37,7 @@ class PastModelTest(TestCase):
             question='Second job title',
             answer='Second job description.'
         )
-        
+
         past_entries = Past.objects.all()
         # The most recent entry should be first
         self.assertEqual(past_entries.first(), past2)
@@ -85,7 +85,7 @@ class ViewsTest(TestCase):
         mock_response = MagicMock()
         mock_response.choices[0].message.content = "Test job description from AI"
         mock_create.return_value = mock_response
-        
+
         form_data = {
             'job_title': 'Software Engineer',
             'tech_skills': 'Python, Django, JavaScript',
@@ -93,14 +93,14 @@ class ViewsTest(TestCase):
             'location': 'Remote',
             'company_tone': 'Friendly'
         }
-        
+
         response = self.client.post(reverse('home'), form_data)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'home.html')
-        
+
         # Check that a Past entry was created
         self.assertTrue(Past.objects.filter(question__icontains='Software Engineer').exists())
-        
+
         # Check that the mock was called with correct parameters
         mock_create.assert_called_once()
 
@@ -111,12 +111,14 @@ class ViewsTest(TestCase):
             'username': 'newuser',
             'email': 'newuser@example.com',
             'password1': 'complexpassword123',
-            'password2': 'complexpassword123'
+            'password2': 'complexpassword123',
+            'security_question': 'favorite_color',
+            'security_answer': 'blue'
         }
-        
+
         response = self.client.post(reverse('register'), form_data)
         self.assertRedirects(response, reverse('login'))
-        
+
         # Check that the user was created
         self.assertTrue(User.objects.filter(username='newuser').exists())
 
@@ -127,12 +129,15 @@ class ViewsTest(TestCase):
             'username': 'newuser',
             'email': 'newuser@example.com',
             'password1': 'complexpassword123',
-            'password2': 'differentpassword'
+            'password2': 'differentpassword',
+            'security_question': 'favorite_color',
+            'security_answer': 'blue'
         }
-        
+
         response = self.client.post(reverse('register'), form_data)
-        self.assertEqual(response.status_code, 302)  # Redirects after error
-        
+        # Check if redirected back to the registration page
+        self.assertRedirects(response, reverse('register'))
+
         # Check that the user was not created
         self.assertFalse(User.objects.filter(username='newuser').exists())
 
@@ -143,7 +148,7 @@ class ViewsTest(TestCase):
             'username': 'testuser',
             'password': 'testpass123'
         }
-        
+
         response = self.client.post(reverse('login'), form_data)
         self.assertRedirects(response, reverse('home'))
 
