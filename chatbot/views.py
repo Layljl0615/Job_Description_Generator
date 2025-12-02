@@ -51,7 +51,7 @@ Requirements:
 # Create Homepage
 @login_required(login_url='login')
 def home(request):
-    context = {
+    default_context = {
         "job_title": "",
         "tech_skills": "",
         "experience_level": "",
@@ -59,6 +59,11 @@ def home(request):
         "company_tone": "",
         "job_description": "",
     }
+    saved_context = request.session.get("last_generation")
+    context = default_context.copy()
+
+    if saved_context:
+        context.update(saved_context)
 
     if request.method == "POST":
         job_title = request.POST.get("job_title", "").strip()
@@ -68,6 +73,7 @@ def home(request):
         optional_notes = request.POST.get("company_tone", "").strip()
 
         company_tone = optional_notes
+        job_description = ""
 
         context.update(
             {
@@ -132,6 +138,15 @@ def home(request):
 
         except Exception as e:
             context["job_description"] = f"Error generating job description: {e}"
+
+        request.session["last_generation"] = {
+            "job_title": job_title,
+            "tech_skills": tech_skills,
+            "experience_level": experience_level,
+            "location": location,
+            "company_tone": company_tone,
+            "job_description": context.get("job_description", ""),
+        }
 
     return render(request, 'home.html', context)
 

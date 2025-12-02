@@ -20,8 +20,8 @@
         --secondary-color: #0ea5e9;
         --bg-color: #f1f5f9;
         --card-bg: #ffffff;
-        --text-main: #1e293b;
-        --text-muted: #64748b;
+        --text-main: #000000;
+        --text-muted: #000000;
         --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #0ea5e9 100%);
         --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         --card-hover-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
@@ -135,28 +135,27 @@
         font-family: 'Poppins', sans-serif;
         font-weight: 700;
         font-size: 1.5rem;
-        background: var(--primary-gradient);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        color: #000000 !important;
+        background: none;
+        -webkit-text-fill-color: #000000;
       }
 
       .navbar .nav-link {
-        color: var(--text-muted) !important;
+        color: #000000 !important;
         font-family: 'Inter', sans-serif;
         font-weight: 500;
         transition: all 0.3s ease;
       }
 
       .navbar .nav-link:hover, .navbar .nav-link.active {
-        color: var(--primary-color) !important;
-        background: rgba(79, 70, 229, 0.05);
+        color: #000000 !important;
+        background: rgba(0, 0, 0, 0.05);
         border-radius: 8px;
       }
       
       .navbar .btn {
         background: var(--primary-gradient) !important;
-        color: white !important;
+        color: #000000 !important;
         border: none !important;
         border-radius: 10px !important;
         padding: 0.5rem 1.5rem !important;
@@ -233,14 +232,18 @@
       p, .form-control, .form-select, .table {
         font-family: 'Inter', sans-serif;
         letter-spacing: -0.01em;
-        color: #cbd5e1;
+        color: #000000;
+      }
+
+      .text-muted, .text-secondary, small, .form-text {
+        color: #000000 !important;
       }
 
       /* Button Enhancement */
       .btn-primary {
         background: var(--primary-gradient);
         border: none;
-        color: white;
+        color: #000000;
         border-radius: 10px;
         padding: 12px 30px;
         font-weight: 600;
@@ -255,7 +258,7 @@
 
       .btn-primary:hover {
         background: var(--primary-gradient);
-        color: white;
+        color: #000000;
         box-shadow: 0 8px 25px rgba(79, 172, 254, 0.6);
         transform: translateY(-2px);
       }
@@ -279,7 +282,7 @@
       .btn-danger {
         background: #ef4444;
         border: none;
-        color: white;
+        color: #000000;
         border-radius: 10px;
         padding: 8px 20px;
         font-weight: 600;
@@ -291,7 +294,7 @@
 
       .btn-danger:hover {
         background: #dc2626;
-        color: white;
+        color: #000000;
         box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.4);
         transform: translateY(-2px);
       }
