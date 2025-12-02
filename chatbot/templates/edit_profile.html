@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="text-center mb-0">Edit Profile</h3>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <!-- Profile Update Form -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Update Profile Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="form_type" value="profile">
+                                
+                                <div class="mb-3">
+                                    <label for="{{ profile_form.username.id_for_label }}" class="form-label">Username</label>
+                                    {{ profile_form.username }}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="{{ profile_form.email.id_for_label }}" class="form-label">Email</label>
+                                    {{ profile_form.email }}
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Password Change Form -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Change Password</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Security Question:</strong> {{ security_question_text }}</p>
+                            
+                            <form method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="form_type" value="password">
+                                
+                                <div class="mb-3">
+                                    <label for="{{ password_form.old_password.id_for_label }}" class="form-label">Current Password</label>
+                                    {{ password_form.old_password }}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="{{ password_form.security_answer.id_for_label }}" class="form-label">Answer to Security Question</label>
+                                    {{ password_form.security_answer }}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="{{ password_form.new_password1.id_for_label }}" class="form-label">New Password</label>
+                                    {{ password_form.new_password1 }}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="{{ password_form.new_password2.id_for_label }}" class="form-label">Confirm New Password</label>
+                                    {{ password_form.new_password2 }}
+                                </div>
+                                
+                                <button type="submit" class="btn btn-warning">Change Password</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

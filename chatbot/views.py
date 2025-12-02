@@ -1,10 +1,11 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from openai import OpenAI
-from .models import Past
+from .models import Past, UserProfile
+from .forms import ProfileUpdateForm, PasswordChangeWithSecurityForm
 from django.core.paginator import Paginator
 import os 
 
@@ -166,6 +167,8 @@ def register_user(request):
         email = request.POST['email']
         password1 = request.POST['password1']
         password2 = request.POST['password2']
+        security_question = request.POST.get('security_question')
+        security_answer = request.POST.get('security_answer')
 
         # Check if passwords match
         if password1 == password2:
@@ -177,17 +180,29 @@ def register_user(request):
             elif User.objects.filter(email=email).exists():
                 messages.error(request, "Email already registered!")
                 return redirect('register')
+            # Check if security question and answer are provided
+            elif not security_question or not security_answer:
+                messages.error(request, "Please provide security question and answer!")
+                return redirect('register')
             else:
                 # Create user
                 user = User.objects.create_user(username=username, email=email, password=password1)
                 user.save()
+                # Create user profile with security question
+                UserProfile.objects.create(
+                    user=user,
+                    security_question=security_question,
+                    security_answer=security_answer
+                )
                 messages.success(request, "Registration successful! Please login.")
                 return redirect('login')
         else:
             messages.error(request, "Passwords do not match!")
             return redirect('register')
 
-    return render(request, 'register.html', {})
+    # Get security questions for the form
+    security_questions = UserProfile.SECURITY_QUESTIONS
+    return render(request, 'register.html', {'security_questions': security_questions})
 
 
 # User Login View
@@ -215,3 +230,47 @@ def logout_user(request):
     logout(request)
     messages.success(request, "You have been logged out successfully!")
     return redirect('login')
+
+
+# Edit Profile View
+@login_required
+def edit_profile(request):
+    if request.method == 'POST':
+        form_type = request.POST.get('form_type')
+        
+        if form_type == 'profile':
+            profile_form = ProfileUpdateForm(request.POST, instance=request.user)
+            if profile_form.is_valid():
+                profile_form.save()
+                messages.success(request, 'Profile updated successfully!')
+                return redirect('edit_profile')
+                
+        elif form_type == 'password':
+            password_form = PasswordChangeWithSecurityForm(request.user, request.POST)
+            if password_form.is_valid():
+                # Change password
+                new_password = password_form.cleaned_data['new_password1']
+                request.user.set_password(new_password)
+                request.user.save()
+                # Keep user logged in after password change
+                update_session_auth_hash(request, request.user)
+                messages.success(request, 'Password changed successfully!')
+                return redirect('edit_profile')
+    else:
+        profile_form = ProfileUpdateForm(instance=request.user)
+        password_form = PasswordChangeWithSecurityForm(user=request.user)
+    
+    # Get user's security question for display
+    try:
+        user_profile = UserProfile.objects.get(user=request.user)
+        security_question_text = dict(UserProfile.SECURITY_QUESTIONS)[user_profile.security_question]
+    except UserProfile.DoesNotExist:
+        security_question_text = "Not set"
+    
+    context = {
+        'profile_form': profile_form,
+        'password_form': password_form,
+        'security_question_text': security_question_text
+    }
+    
+    return render(request, 'edit_profile.html', context)
