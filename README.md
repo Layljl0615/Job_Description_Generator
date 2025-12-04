@@ -104,25 +104,45 @@ After the server starts, visit http://127.0.0.1:8000/
 
 ```
 Job_Description_Generator/
-├── chatbot/                 # Main application
-│   ├── migrations/         # Database migration files
-│   ├── templates/          # HTML templates
-│   │   ├── base.html      # Base template
-│   │   ├── home.html      # Home page
-│   │   ├── login.html     # Login page
-│   │   ├── register.html  # Registration page
-│   │   ├── past.html      # History page
-│   │   └── navbar.html    # Navigation bar
-│   ├── models.py          # Data models
-│   ├── views.py           # View functions
-│   └── urls.py            # URL routing
-├── chatgpt/                # Project configuration
-│   ├── settings.py        # Django settings
-│   └── urls.py            # Main URL configuration
-├── manage.py              # Django management script
-├── .env                   # Environment variables (not in git)
-├── .gitignore            # Git ignore file
-└── README.md             # Project documentation
+├── chatbot/                           # Main business application
+│   ├── migrations/                    # Database schema migrations
+│   │   ├── 0001_initial.py
+│   │   ├── 0002_alter_past_options...
+│   │   ├── 0003_alter_past_created_at.py
+│   │   └── 0004_userprofile.py        # Adds UserProfile model
+│   │
+│   ├── templates/                     # All UI pages (Bootstrap + Django Templates)
+│   │   ├── base.html                  # Global layout (extends blocks)
+│   │   ├── navbar.html                # Reusable site-wide navbar
+│   │   ├── home.html                  # JD generator UI + live preview
+│   │   ├── past.html                  # History page with pagination & formatted output
+│   │   ├── login.html                 # Login page
+│   │   ├── register.html              # Registration page
+│   │   └── edit_profile.html          # NEW: Profile editing UI
+│   │
+│   ├── templatetags/                  # NEW: Custom template filters
+│   │   ├── __init__.py
+│   │   └── jd_format.py               # Formats JD output (bullets, newline, escapes)
+│   │
+│   ├── admin.py                       # Django admin registrations
+│   ├── apps.py                        # App config
+│   ├── forms.py                       # Login / register / profile forms
+│   ├── models.py                      # Past + UserProfile models
+│   ├── urls.py                        # App-level routing
+│   └── views.py                       # Core logic (JD generation, history, profile, auth)
+│
+├── chatgpt/                           # Django project configuration
+│   ├── settings.py                    # Environment, static files, authentication, OpenAI key
+│   ├── urls.py                        # Root URL router
+│   ├── wsgi.py                        # WSGI entrypoint for Gunicorn / production
+│   └── asgi.py                        # ASGI entrypoint (optional for WebSockets)
+│
+├── manage.py                          # Django command-line controller
+├── .env                               # Local environment variables (OPENAI_API_KEY, DEBUG)
+├── .gitignore                         # Git rules
+├── db.sqlite3                         # Default SQLite database (dev)
+└── venv/                              # Local virtual environment
+documentation
 ```
 
 ## Data Models
