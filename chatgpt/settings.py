@@ -23,6 +23,7 @@ ALLOWED_HOSTS = ["*"]
 # CSRF trusted origins for Railway deployment
 CSRF_TRUSTED_ORIGINS = [
     'https://athletic-flexibility-production.up.railway.app',
+    'https://jobdescriptiongenerator-production.up.railway.app',
     'https://*.railway.app',  # Allow all Railway domains
 ]
 
