@@ -140,5 +140,13 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://web-production-78ef6.up.railway.app",
+    'https://jobdescriptiongenerator-production.up.railway.app',
+    'https://web-production-78ef6.up.railway.app',  # 你的 backend URL
+]
+
+ALLOWED_HOSTS = [
+    'jobdescriptiongenerator-production.up.railway.app',
+    'web-production-78ef6.up.railway.app',
+    '127.0.0.1',
+    'localhost',
 ]
