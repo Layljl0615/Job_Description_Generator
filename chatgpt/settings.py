@@ -24,8 +24,12 @@ ALLOWED_HOSTS = ["*"]
 CSRF_TRUSTED_ORIGINS = [
     'https://athletic-flexibility-production.up.railway.app',
     'https://jobdescriptiongenerator-production.up.railway.app',
-    'https://*.railway.app',  # Allow all Railway domains
 ]
+
+# If Railway provides a domain via environment variable, add it
+railway_domain = os.getenv('RAILWAY_PUBLIC_DOMAIN')
+if railway_domain:
+    CSRF_TRUSTED_ORIGINS.append(f'https://{railway_domain}')
 
 
 # Application definition
