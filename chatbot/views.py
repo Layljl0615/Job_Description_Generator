@@ -7,7 +7,7 @@ from openai import OpenAI
 from .models import Past, UserProfile
 from .forms import ProfileUpdateForm, PasswordChangeWithSecurityForm
 from django.core.paginator import Paginator
-import os 
+import os
 from .utils import render_job_description
 
 # Create OpenAI client once, using the env var loaded by manage.py
@@ -18,15 +18,16 @@ if not API_KEY:
 client = OpenAI(api_key=API_KEY)
 
 
-def build_jd_prompt(job_title, tech_skills, experience_level, location, optional_notes):
+def build_jd_prompt(company_name, job_title, tech_skills, experience_level, location, optional_notes):
     """
-    Combine 4 required fields plus 1 optional free-text field into a clear prompt.
+    Combine 5 required fields plus 1 optional free-text field into a clear prompt.
     """
     base_prompt = f"""
 You are an experienced technical recruiter and HR specialist.
 
 Based on the following information, write a complete job description in English.
 
+- Company: {company_name}
 - Job Title: {job_title}
 - Tech Skills: {tech_skills}
 - Experience Level: {experience_level}
@@ -53,6 +54,7 @@ Requirements:
 @login_required(login_url='login')
 def home(request):
     default_context = {
+        "company_name": "",
         "job_title": "",
         "tech_skills": "",
         "experience_level": "",
@@ -73,6 +75,7 @@ def home(request):
             )
 
     if request.method == "POST":
+        company_name = request.POST.get("company_name", "").strip()
         job_title = request.POST.get("job_title", "").strip()
         tech_skills = request.POST.get("tech_skills", "").strip()
         experience_level = request.POST.get("experience_level", "").strip()
@@ -84,6 +87,7 @@ def home(request):
 
         context.update(
             {
+                "company_name": company_name,
                 "job_title": job_title,
                 "tech_skills": tech_skills,
                 "experience_level": experience_level,
@@ -93,6 +97,7 @@ def home(request):
         )
 
         user_prompt = build_jd_prompt(
+            company_name,
             job_title,
             tech_skills,
             experience_level,
@@ -124,6 +129,7 @@ def home(request):
                 job_description = "No response received from the model."
 
             lines = [
+                f"Company: {company_name}",
                 f"Job Title: {job_title}",
                 f"Tech Skills: {tech_skills}",
                 f"Experience Level: {experience_level}",
@@ -149,6 +155,7 @@ def home(request):
             context["job_description_html"] = context["job_description"]
 
         request.session["last_generation"] = {
+            "company_name": company_name,
             "job_title": job_title,
             "tech_skills": tech_skills,
             "experience_level": experience_level,
