@@ -1,14 +1,37 @@
-{% extends 'base.html' %} {% block content %} {% load jd_format %}
+{% extends 'base.html' %} {% load jd_format %} {% block content %}
 <div class="container mt-4">
   <div class="row">
-    <!-- left table -->
+    <!-- left form -->
     <div class="col-md-5">
       <h3 class="mb-4">AI Job Description Generator</h3>
+
       <form method="post">
         {% csrf_token %}
 
+        <p class="text-muted">
+          Fields marked with <span class="text-danger">*</span> are required.
+        </p>
+
+        <!-- Company Name (required) -->
         <div class="mb-3">
-          <label class="form-label">Job Title</label>
+          <label class="form-label">
+            Company Name <span class="text-danger">*</span>
+          </label>
+          <input
+            type="text"
+            class="form-control"
+            name="company_name"
+            placeholder="e.g. Acme Corp"
+            value="{{ company_name|default:'' }}"
+            required
+          />
+        </div>
+
+        <!-- Job Title (required) -->
+        <div class="mb-3">
+          <label class="form-label">
+            Job Title <span class="text-danger">*</span>
+          </label>
           <input
             type="text"
             class="form-control"
@@ -19,8 +42,11 @@
           />
         </div>
 
+        <!-- Tech Skills (required) -->
         <div class="mb-3">
-          <label class="form-label">Tech Skills</label>
+          <label class="form-label">
+            Tech Skills <span class="text-danger">*</span>
+          </label>
           <input
             type="text"
             class="form-control"
@@ -32,28 +58,37 @@
           <small class="text-muted">Comma separated skills.</small>
         </div>
 
+        <!-- Experience Level (required) -->
         <div class="mb-3">
-          <label class="form-label">Experience Level</label>
+          <label class="form-label">
+            Experience Level <span class="text-danger">*</span>
+          </label>
           <input
             type="text"
             class="form-control"
             name="experience_level"
-            placeholder="e.g. 3-5 years"
+            placeholder="e.g. 3–5 years"
             value="{{ experience_level|default:'' }}"
+            required
           />
         </div>
 
+        <!-- Location (required) -->
         <div class="mb-3">
-          <label class="form-label">Location</label>
+          <label class="form-label">
+            Location <span class="text-danger">*</span>
+          </label>
           <input
             type="text"
             class="form-control"
             name="location"
             placeholder="e.g. San Francisco / Remote"
             value="{{ location|default:'' }}"
+            required
           />
         </div>
 
+        <!-- Optional notes (the only non-required field) -->
         <div class="mb-3">
           <label class="form-label">Optional</label>
           <input
@@ -71,7 +106,7 @@
       </form>
     </div>
 
-    <!-- right jd -->
+    <!-- right preview -->
     <div class="col-md-7">
       <h4 class="mb-3">Preview</h4>
       <div class="card" style="min-height: 300px">
