@@ -35,7 +35,7 @@
     "ASKED_ADD_EXTERNAL_FILES": "true",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "y",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "/Users/luyihan/Job_Description_Generator",
     "node.js.detected.package.eslint": "true",
@@ -205,6 +205,7 @@
       <workItem from="1763970332615" duration="202000" />
       <workItem from="1763970537627" duration="128000" />
       <workItem from="1763970671790" duration="5464000" />
+      <workItem from="1765078113700" duration="1839000" />
     </task>
     <servers />
   </component>
