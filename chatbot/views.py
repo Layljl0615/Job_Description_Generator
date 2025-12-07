@@ -269,16 +269,18 @@ def logout_user(request):
 def edit_profile(request):
     if request.method == 'POST':
         form_type = request.POST.get('form_type')
-        
+
         if form_type == 'profile':
             profile_form = ProfileUpdateForm(request.POST, instance=request.user)
+            password_form = PasswordChangeWithSecurityForm(user=request.user)
             if profile_form.is_valid():
                 profile_form.save()
                 messages.success(request, 'Profile updated successfully!')
                 return redirect('edit_profile')
-                
+
         elif form_type == 'password':
             password_form = PasswordChangeWithSecurityForm(request.user, request.POST)
+            profile_form = ProfileUpdateForm(instance=request.user)
             if password_form.is_valid():
                 # Change password
                 new_password = password_form.cleaned_data['new_password1']
@@ -288,21 +290,26 @@ def edit_profile(request):
                 update_session_auth_hash(request, request.user)
                 messages.success(request, 'Password changed successfully!')
                 return redirect('edit_profile')
+            # 如果密码表单验证失败，两个表单都需要传递给模板
+        else:
+            # 处理未知的 form_type
+            profile_form = ProfileUpdateForm(instance=request.user)
+            password_form = PasswordChangeWithSecurityForm(user=request.user)
     else:
         profile_form = ProfileUpdateForm(instance=request.user)
         password_form = PasswordChangeWithSecurityForm(user=request.user)
-    
+
     # Get user's security question for display
     try:
         user_profile = UserProfile.objects.get(user=request.user)
         security_question_text = dict(UserProfile.SECURITY_QUESTIONS)[user_profile.security_question]
     except UserProfile.DoesNotExist:
         security_question_text = "Not set"
-    
+
     context = {
         'profile_form': profile_form,
         'password_form': password_form,
         'security_question_text': security_question_text
     }
-    
+
     return render(request, 'edit_profile.html', context)
